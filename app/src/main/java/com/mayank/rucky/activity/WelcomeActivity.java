@@ -167,7 +167,7 @@ public class WelcomeActivity extends AppCompatActivity {
                 || Build.PRODUCT.contains("sdk_x86")
                 || Build.PRODUCT.contains("vbox86p")
                 || Build.PRODUCT.contains("emulator")
-                || Build.PRODUCT.contains("simulator")
-                || Build.USER.contains("android-build");
+                || Build.PRODUCT.contains("simulator");
+                //|| Build.USER.contains("android-build");
     }
 }
