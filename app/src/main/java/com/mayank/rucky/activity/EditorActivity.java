@@ -87,7 +87,7 @@ import javax.net.ssl.HttpsURLConnection;
 public class EditorActivity extends AppCompatActivity {
 
     private boolean root = false;
-    private boolean hidPresent = true;
+    private boolean hidPresent = false; // true;
 
     public static Config config;
     public NotificationCompat.Builder updateNotify;
