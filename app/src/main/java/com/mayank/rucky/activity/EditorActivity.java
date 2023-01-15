@@ -660,11 +660,11 @@ public class EditorActivity extends AppCompatActivity {
             }
             if (!hid0 || !hid1) hidPresent = false;
             if (!hid0) {
-                fname.add("fhid0");
+                fname.add("/config/usb_gadget/g1/functions/fhid0");
                 f.add("/config/usb_gadget/g1/functions/hid.0");
             }
             if (!hid1) {
-                fname.add("fhid1");
+                fname.add("/config/usb_gadget/g1/functions/fhid1");
                 f.add("/config/usb_gadget/g1/functions/hid.1");
             }
             String controller = deactivateGadget();
@@ -676,7 +676,7 @@ public class EditorActivity extends AppCompatActivity {
                 dos.flush();
             }
             for(int i = 0; i < f.size(); i++) {
-                dos.writeBytes("ln -s "+f.get(i)+" /config/usb_gadget/g1/configs/b.1/"+fname.get(i)+"\n");
+                dos.writeBytes("ln -s "+f.get(i)+" "+fname.get(i)+"\n");
             }
             dos.flush();
 //            if(usbConfig.contains("adb")) {
@@ -715,7 +715,7 @@ public class EditorActivity extends AppCompatActivity {
                 for (int i = 0; i < f.size(); i++) {
                     String line = f.get(i);
                     if (line.contains("hid.0") || line.contains("hid.1")) continue;
-                    dos.writeBytes("ln -s " + line + " /config/usb_gadget/g1/configs/b.1/" + fname.get(i) + "\n");
+                    dos.writeBytes("ln -s " + line + " " + fname.get(i) + "\n");
                 }
                 dos.flush();
 //                if (usbConfig.contains("adb")) {
