@@ -157,14 +157,14 @@ public class EditorActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if(config.getConfigFSOption())
-            disableConfigFSHID();
         new MaterialAlertDialogBuilder(EditorActivity.this)
                 .setTitle(getResources().getString(R.string.exit_dialog))
                 .setCancelable(false)
                 .setPositiveButton(getResources().getString(R.string.btn_exit), (dialog, which) -> {
                     if(config.getHIDMode() == 1)
                         stopNetworkSocketService();
+                    if(config.getConfigFSOption())
+                        disableConfigFSHID();
                     finishAndRemoveTask();
                     System.exit(0);
                 })
