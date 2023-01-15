@@ -638,6 +638,7 @@ public class EditorActivity extends AppCompatActivity {
 
     private boolean enableConfigFSHID() {
         ArrayList<String> f = new ArrayList<>();
+        ArrayList<String> fname = new ArrayList<>();
         try {
             dos.writeBytes("getprop sys.usb.config\n");
             dos.flush();
@@ -645,6 +646,9 @@ public class EditorActivity extends AppCompatActivity {
             dos.writeBytes("find /config/usb_gadget/g1/configs/b.1/ -type l | wc -l\n");
             dos.flush();
             int symlinkCount = Integer.parseInt(dis.readLine());
+            dos.writeBytes("find /config/usb_gadget/g1/configs/b.1/ -type l\n");
+            dos.flush();
+            for(int i = 0; i < symlinkCount; i++) fname.add(dis.readLine());
             dos.writeBytes("readlink -f $(find /config/usb_gadget/g1/configs/b.1/ -type l)\n");
             dos.flush();
             boolean hid0 = false, hid1 = false;
@@ -655,8 +659,14 @@ public class EditorActivity extends AppCompatActivity {
                 f.add(line);
             }
             if (!hid0 || !hid1) hidPresent = false;
-            if (!hid0) f.add("/config/usb_gadget/g1/functions/hid.0");
-            if (!hid1) f.add("/config/usb_gadget/g1/functions/hid.1");
+            if (!hid0) {
+                fname.add("fhid0");
+                f.add("/config/usb_gadget/g1/functions/hid.0");
+            }
+            if (!hid1) {
+                fname.add("fhid1");
+                f.add("/config/usb_gadget/g1/functions/hid.1");
+            }
             String controller = deactivateGadget();
             if(!usbConfig.contains("hid")) {
                 hidPresent = false;
@@ -666,7 +676,7 @@ public class EditorActivity extends AppCompatActivity {
                 dos.flush();
             }
             for(int i = 0; i < f.size(); i++) {
-                dos.writeBytes("ln -s "+f.get(i)+" /config/usb_gadget/g1/configs/b.1/f"+i+"\n");
+                dos.writeBytes("ln -s "+f.get(i)+" /config/usb_gadget/g1/configs/b.1/"+fname.get(i)+"\n");
             }
             dos.flush();
 //            if(usbConfig.contains("adb")) {
@@ -687,10 +697,14 @@ public class EditorActivity extends AppCompatActivity {
     private void disableConfigFSHID() {
         if (!hidPresent) {
             ArrayList<String> f = new ArrayList<>();
+            ArrayList<String> fname = new ArrayList<>();
             try {
                 dos.writeBytes("find /config/usb_gadget/g1/configs/b.1/ -type l | wc -l\n");
                 dos.flush();
                 int symlinkCount = Integer.parseInt(dis.readLine());
+                dos.writeBytes("find /config/usb_gadget/g1/configs/b.1/ -type l\n");
+                dos.flush();
+                for(int i = 0; i < symlinkCount; i++) fname.add(dis.readLine());
                 dos.writeBytes("readlink -f $(find /config/usb_gadget/g1/configs/b.1/ -type l)\n");
                 dos.flush();
                 for (int i = 0; i < symlinkCount; i++) f.add(dis.readLine());
@@ -701,7 +715,7 @@ public class EditorActivity extends AppCompatActivity {
                 for (int i = 0; i < f.size(); i++) {
                     String line = f.get(i);
                     if (line.contains("hid.0") || line.contains("hid.1")) continue;
-                    dos.writeBytes("ln -s " + line + " /config/usb_gadget/g1/configs/b.1/f" + i + "\n");
+                    dos.writeBytes("ln -s " + line + " /config/usb_gadget/g1/configs/b.1/" + fname.get(i) + "\n");
                 }
                 dos.flush();
 //                if (usbConfig.contains("adb")) {
