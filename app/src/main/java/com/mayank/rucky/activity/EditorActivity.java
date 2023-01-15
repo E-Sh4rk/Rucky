@@ -163,8 +163,10 @@ public class EditorActivity extends AppCompatActivity {
                 .setPositiveButton(getResources().getString(R.string.btn_exit), (dialog, which) -> {
                     if(config.getHIDMode() == 1)
                         stopNetworkSocketService();
-                    if(config.getConfigFSOption())
+                    if(config.getConfigFSOption()) {
                         disableConfigFSHID();
+                        deleteConfigFsFunctions();
+                    }
                     finishAndRemoveTask();
                     System.exit(0);
                 })
@@ -593,7 +595,7 @@ public class EditorActivity extends AppCompatActivity {
             dos.writeBytes("        echo \"1\" > /config/usb_gadget/g1/functions/hid.1/protocol\n");
             dos.writeBytes("        echo \"2\" > /config/usb_gadget/g1/functions/hid.1/subclass\n");
             dos.writeBytes("        echo \"4\" > /config/usb_gadget/g1/functions/hid.1/report_length\n");
-            dos.writeBytes("            echo -n -e '\\x05\\x01\\x09\\x02\\xa1\\x01\\x09\\x01\\xa1\\x00\\x05\\x09\\x19\\x01\\x29\\x05\\x15\\x00\\x25\\x01\\x95\\x05\\x75\\x01\\x81\\x02\\x95\\x01\\x75\\x03\\x81\\x01\\x05\\x01\\x09\\x30\\x09\\x31\\x09\\x38\\x15\\x81\\x25\\x7f\\x75\\x08\\x95\\x03\\x81\\x06\\xc0\\xc0' > config/usb_gadget/g1/functions/hid.1/report_desc\n");
+            dos.writeBytes("        echo -n -e '\\x05\\x01\\x09\\x02\\xa1\\x01\\x09\\x01\\xa1\\x00\\x05\\x09\\x19\\x01\\x29\\x05\\x15\\x00\\x25\\x01\\x95\\x05\\x75\\x01\\x81\\x02\\x95\\x01\\x75\\x03\\x81\\x01\\x05\\x01\\x09\\x30\\x09\\x31\\x09\\x38\\x15\\x81\\x25\\x7f\\x75\\x08\\x95\\x03\\x81\\x06\\xc0\\xc0' > config/usb_gadget/g1/functions/hid.1/report_desc\n");
             dos.writeBytes("        echo 0\n");
             dos.writeBytes("    fi\n");
             dos.writeBytes("else\n");
@@ -604,6 +606,15 @@ public class EditorActivity extends AppCompatActivity {
         } catch(Exception ignored) {
         }
         return status;
+    }
+
+    private void deleteConfigFsFunctions() {
+        try {
+            dos.writeBytes("rm -rf /config/usb_gadget/g1/functions/hid.0 2>/dev/null\n");
+            dos.writeBytes("rm -rf /config/usb_gadget/g1/functions/hid.1 2>/dev/null\n");
+            dos.flush();
+        } catch(Exception ignored) {
+        }
     }
 
     private String deactivateGadget() throws Exception {
@@ -647,17 +658,19 @@ public class EditorActivity extends AppCompatActivity {
             String controller = deactivateGadget();
             if(!usbConfig.contains("hid")) {
                 hidPresent = false;
-                usbConfig += ",hid";
+                if (!usbConfig.isEmpty()) usbConfig += ",";
+                usbConfig += "hid";
                 dos.writeBytes("setprop sys.usb.config " + usbConfig + "\n");
                 dos.flush();
             }
             for(int i = 0; i < f.size(); i++) {
                 dos.writeBytes("ln -s "+f.get(i)+" /config/usb_gadget/g1/configs/b.1/f"+i+"\n");
             }
-            if(usbConfig.contains("adb")) {
-                dos.writeBytes("start adbd\n");
-                dos.writeBytes("setprop sys.usb.ffs.ready 1\n");
-            }
+            dos.flush();
+//            if(usbConfig.contains("adb")) {
+//                dos.writeBytes("start adbd\n");
+//                dos.writeBytes("setprop sys.usb.ffs.ready 1\n");
+//            }
             dos.writeBytes("echo "+controller+" > /config/usb_gadget/g1/UDC\n");
             dos.writeBytes("sleep 1\n");
             dos.writeBytes("echo 1\n");
@@ -683,27 +696,20 @@ public class EditorActivity extends AppCompatActivity {
                 dos.flush();
                 String usbConfig = dis.readLine();
                 String controller = deactivateGadget();
-                if (!usbConfig.contains("hid")) {
-                    hidPresent = false;
-                    usbConfig += ",hid";
-                    dos.writeBytes("setprop sys.usb.config " + usbConfig + "\n");
-                    dos.flush();
-                }
                 for (int i = 0; i < f.size(); i++) {
                     String line = f.get(i);
                     if (line.contains("hid.0") || line.contains("hid.1")) continue;
                     dos.writeBytes("ln -s " + line + " /config/usb_gadget/g1/configs/b.1/f" + i + "\n");
                 }
-                if (usbConfig.contains("adb")) {
-                    dos.writeBytes("start adbd\n");
-                    dos.writeBytes("setprop sys.usb.ffs.ready 1\n");
-                }
+                dos.flush();
+//                if (usbConfig.contains("adb")) {
+//                    dos.writeBytes("start adbd\n");
+//                    dos.writeBytes("setprop sys.usb.ffs.ready 1\n");
+//                }
                 if (usbConfig.contains("hid")) {
-                    usbConfig = usbConfig.replace("hid", "").replace(",,", ",");
-                    if (usbConfig.endsWith(","))
-                        usbConfig = usbConfig.substring(0, usbConfig.length() - 1);
-                    if (usbConfig.startsWith(","))
-                        usbConfig = usbConfig.substring(1);
+                    usbConfig = usbConfig.replace(",hid", "")
+                            .replace("hid,", "")
+                            .replace("hid", "");
                     dos.writeBytes("setprop sys.usb.config " + usbConfig + "\n");
                     dos.flush();
                 }
@@ -711,6 +717,7 @@ public class EditorActivity extends AppCompatActivity {
                 dos.writeBytes("sleep 1\n");
                 dos.writeBytes("echo 1\n");
                 dos.flush();
+                dis.readLine();
             } catch (Exception ignored) {
             }
         }

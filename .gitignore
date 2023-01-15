@@ -58,6 +58,6 @@ freeline/
 freeline_project_description.json
 app/nightly/*
 app/release/*
-app/.cxx/*
 
+app/.cxx/*
 rucky.zip
