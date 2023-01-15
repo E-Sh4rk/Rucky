@@ -660,11 +660,11 @@ public class EditorActivity extends AppCompatActivity {
             }
             if (!hid0 || !hid1) hidPresent = false;
             if (!hid0) {
-                fname.add("/config/usb_gadget/g1/functions/fhid0");
+                fname.add("/config/usb_gadget/g1/configs/b.1/fhid0");
                 f.add("/config/usb_gadget/g1/functions/hid.0");
             }
             if (!hid1) {
-                fname.add("/config/usb_gadget/g1/functions/fhid1");
+                fname.add("/config/usb_gadget/g1/configs/b.1/fhid1");
                 f.add("/config/usb_gadget/g1/functions/hid.1");
             }
             String controller = deactivateGadget();
