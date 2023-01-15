@@ -612,7 +612,9 @@ public class EditorActivity extends AppCompatActivity {
         try {
             dos.writeBytes("rm -rf /config/usb_gadget/g1/functions/hid.0 2>/dev/null\n");
             dos.writeBytes("rm -rf /config/usb_gadget/g1/functions/hid.1 2>/dev/null\n");
+            dos.writeBytes("echo 0\n");
             dos.flush();
+            dis.readLine();
         } catch(Exception ignored) {
         }
     }
@@ -660,7 +662,7 @@ public class EditorActivity extends AppCompatActivity {
                 hidPresent = false;
                 if (!usbConfig.isEmpty()) usbConfig += ",";
                 usbConfig += "hid";
-                dos.writeBytes("setprop sys.usb.config " + usbConfig + "\n");
+                dos.writeBytes("setprop sys.usb.config \"" + usbConfig + "\"\n");
                 dos.flush();
             }
             for(int i = 0; i < f.size(); i++) {
@@ -710,7 +712,7 @@ public class EditorActivity extends AppCompatActivity {
                     usbConfig = usbConfig.replace(",hid", "")
                             .replace("hid,", "")
                             .replace("hid", "");
-                    dos.writeBytes("setprop sys.usb.config " + usbConfig + "\n");
+                    dos.writeBytes("setprop sys.usb.config \"" + usbConfig + "\"\n");
                     dos.flush();
                 }
                 dos.writeBytes("echo "+controller+" > /config/usb_gadget/g1/UDC\n");
