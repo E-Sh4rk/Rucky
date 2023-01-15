@@ -609,13 +609,15 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     private void deleteConfigFsFunctions() {
-        try {
-            dos.writeBytes("rm -rf /config/usb_gadget/g1/functions/hid.0 2>/dev/null\n");
-            dos.writeBytes("rm -rf /config/usb_gadget/g1/functions/hid.1 2>/dev/null\n");
-            dos.writeBytes("echo 0\n");
-            dos.flush();
-            dis.readLine();
-        } catch(Exception ignored) {
+        if (!hidPresent) {
+            try {
+                dos.writeBytes("rm -rf /config/usb_gadget/g1/functions/hid.0 2>/dev/null\n");
+                dos.writeBytes("rm -rf /config/usb_gadget/g1/functions/hid.1 2>/dev/null\n");
+                dos.writeBytes("echo 0\n");
+                dos.flush();
+                dis.readLine();
+            } catch (Exception ignored) {
+            }
         }
     }
 
