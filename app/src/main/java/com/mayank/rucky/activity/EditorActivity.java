@@ -533,6 +533,8 @@ public class EditorActivity extends AppCompatActivity {
         try {
             dos.writeBytes("if [ \"$(printf '%s\\n%s\\n' \"3.19\" \"$(uname -r)\" | sort -V | head -n1)\" = \"3.19\" ]; then\n");
             dos.writeBytes("    echo 0\n");
+            dos.writeBytes("else\n");
+            dos.writeBytes("    echo 1\n");
             dos.writeBytes("fi\n");
             dos.flush();
             if (Integer.parseInt(dis.readLine()) == 0)
@@ -547,6 +549,8 @@ public class EditorActivity extends AppCompatActivity {
         try {
             dos.writeBytes("if [ -d /config/usb_gadget -o -f /sys/devices/virtual/android_usb/android0/enable ]; then\n");
             dos.writeBytes("    echo 0\n");
+            dos.writeBytes("else\n");
+            dos.writeBytes("    echo 1\n");
             dos.writeBytes("fi\n");
             dos.flush();
             if (Integer.parseInt(dis.readLine()) == 0)
@@ -602,6 +606,23 @@ public class EditorActivity extends AppCompatActivity {
         return status;
     }
 
+    private String deactivateGadget() throws Exception {
+        dos.writeBytes("cat /config/usb_gadget/g1/UDC\n");
+        dos.flush();
+        String controller = dis.readLine();
+        if (controller.isEmpty() || controller.equals("none") || controller.equals("not set")) {
+            dos.writeBytes("getprop sys.usb.controller\n");
+            dos.flush();
+            controller = dis.readLine();
+        }
+        dos.writeBytes("echo \"none\" > /config/usb_gadget/g1/UDC\n");
+        dos.writeBytes("stop adbd\n");
+        dos.writeBytes("setprop sys.usb.ffs.ready 0\n");
+        dos.writeBytes("rm $(find /config/usb_gadget/g1/configs/b.1 -type l) 2>/dev/null\n");
+        dos.flush();
+        return controller;
+    }
+
     private boolean enableConfigFSHID() {
         ArrayList<String> f = new ArrayList<>();
         try {
@@ -623,11 +644,7 @@ public class EditorActivity extends AppCompatActivity {
             if (!hid0 || !hid1) hidPresent = false;
             if (!hid0) f.add("/config/usb_gadget/g1/functions/hid.0");
             if (!hid1) f.add("/config/usb_gadget/g1/functions/hid.1");
-            dos.writeBytes("echo \"none\" > /config/usb_gadget/g1/UDC\n");
-            dos.writeBytes("stop adbd\n");
-            dos.writeBytes("setprop sys.usb.ffs.ready 0\n");
-            dos.writeBytes("rm $(find /config/usb_gadget/g1/configs/b.1 -type l) 2>/dev/null\n");
-            dos.flush();
+            String controller = deactivateGadget();
             if(!usbConfig.contains("hid")) {
                 hidPresent = false;
                 usbConfig += ",hid";
@@ -641,7 +658,7 @@ public class EditorActivity extends AppCompatActivity {
                 dos.writeBytes("start adbd\n");
                 dos.writeBytes("setprop sys.usb.ffs.ready 1\n");
             }
-            dos.writeBytes("echo $(getprop sys.usb.controller) > /config/usb_gadget/g1/UDC\n");
+            dos.writeBytes("echo "+controller+" > /config/usb_gadget/g1/UDC\n");
             dos.writeBytes("sleep 1\n");
             dos.writeBytes("echo 1\n");
             dos.flush();
@@ -665,11 +682,7 @@ public class EditorActivity extends AppCompatActivity {
                 dos.writeBytes("getprop sys.usb.config\n");
                 dos.flush();
                 String usbConfig = dis.readLine();
-                dos.writeBytes("echo \"none\" > /config/usb_gadget/g1/UDC\n");
-                dos.writeBytes("stop adbd\n");
-                dos.writeBytes("setprop sys.usb.ffs.ready 0\n");
-                dos.writeBytes("rm $(find /config/usb_gadget/g1/configs/b.1 -type l) 2>/dev/null\n");
-                dos.flush();
+                String controller = deactivateGadget();
                 if (!usbConfig.contains("hid")) {
                     hidPresent = false;
                     usbConfig += ",hid";
@@ -694,7 +707,7 @@ public class EditorActivity extends AppCompatActivity {
                     dos.writeBytes("setprop sys.usb.config " + usbConfig + "\n");
                     dos.flush();
                 }
-                dos.writeBytes("echo $(getprop sys.usb.controller) > /config/usb_gadget/g1/UDC\n");
+                dos.writeBytes("echo "+controller+" > /config/usb_gadget/g1/UDC\n");
                 dos.writeBytes("sleep 1\n");
                 dos.writeBytes("echo 1\n");
                 dos.flush();

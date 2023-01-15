@@ -104,7 +104,10 @@ public class ConfigActivity extends AppCompatActivity {
             for(int i = 0; i < filename.size(); i++) {
                 languages.add(filename.get(i).replace(".json", "").replace("_"," ").toUpperCase());
             }
-            langBtn.setText(languages.get(filename.indexOf(config.getHIDFileSelected())));
+            if (filename.contains(config.getHIDFileSelected()))
+                langBtn.setText(languages.get(filename.indexOf(config.getHIDFileSelected())));
+            else
+                langBtn.setText(R.string.lang_undefined);
             langBtn.setOnClickListener(view -> new MaterialAlertDialogBuilder(ConfigActivity.this)
                     .setCancelable(false)
                     .setSingleChoiceItems(languages.toArray(new CharSequence[0]), filename.indexOf(config.getHIDFileSelected()), (dialog, i) -> {

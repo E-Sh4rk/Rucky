@@ -105,6 +105,7 @@
     <string name="hid_choice_summary">Switch between Legacy HID and Customisable HID</string>
     <string name="hid_title">HID Language</string>
     <string name="hid_summary">Download additional HID languages or design new HID layouts.</string>
+    <string name="lang_undefined">Undefined</string>
     <string name="settings_usb_title">USB Connect Launch</string>
     <string name="settings_usb_desc">Run button will launch attack when USB is connected.</string>
     <string name="settings_net_title">Network Socket Connect Launch</string>
